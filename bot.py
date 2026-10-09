@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import re
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
@@ -61,7 +62,6 @@ async def cmd_addtask(message: Message):
     try:
         text = message.text.replace("/addtask", "").strip()
         
-        import re
         parts = re.findall(r'"([^"]*)"', text)
         
         if len(parts) < 2:
@@ -105,7 +105,8 @@ async def cmd_addtask(message: Message):
 async def cmd_list(message: Message):
     if message.from_user.id != ADMIN_ID:
         return
-    today = "2026-10-09"  # بعداً خودکار می‌کنیم
+    from datetime import datetime
+    today = datetime.now().strftime("%Y-%m-%d")
     tasks = await get_tasks_by_date(today)
     if not tasks:
         await message.answer("تسکی برای امروز ثبت نشده.")
