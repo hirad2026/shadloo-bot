@@ -59,21 +59,18 @@ async def cmd_addtask(message: Message):
         return
 
     try:
-        # جدا کردن متن دستور
         text = message.text.replace("/addtask", "").strip()
         
-        # پیدا کردن قسمت‌های داخل گیومه
         import re
         parts = re.findall(r'"([^"]*)"', text)
         
         if len(parts) < 2:
-            await message.answer("فرمت اشتباه است. حتماً نام تسک و منابع را داخل گیومه بگذارید.")
+            await message.answer("فرمت اشتباه است.\nحتماً نام تسک و منابع را داخل گیومه بگذارید.")
             return
 
         task_name = parts[0]
         resources = parts[1]
 
-        # بقیه قسمت‌ها
         remaining = text
         for p in parts:
             remaining = remaining.replace(f'"{p}"', "")
@@ -90,10 +87,20 @@ async def cmd_addtask(message: Message):
         planned_percent = int(remaining_parts[3])
 
         await add_task(date, time, task_name, username, planned_percent, resources)
-        await message.answer(f"✅ تسک با موفقیت ثبت شد:\n\n📅 تاریخ: {date}\n⏰ ساعت: {time}\n📝 تسک: {task_name}\n👤 مسئول: @{username}\n📊 پلان: {planned_percent}%\n📦 منابع: {resources}")
+        
+        await message.answer(
+            f"✅ تسک با موفقیت ثبت شد:\n\n"
+            f"📅 تاریخ: {date}\n"
+            f"⏰ ساعت: {time}\n"
+            f"📝 تسک: {task_name}\n"
+            f"👤 مسئول: @{username}\n"
+            f"📊 پلان: {planned_percent}%\n"
+            f"📦 منابع: {resources}"
+        )
 
     except Exception as e:
-        await message.answer(f"خطا در ثبت تسک:\n{e}\n\nلطفاً فرمت را دقیق رعایت کنید.")
+        await message.answer(f"خطا در ثبت تسک:\n{str(e)}")
+
 @dp.message(Command("list"))
 async def cmd_list(message: Message):
     if message.from_user.id != ADMIN_ID:
