@@ -57,8 +57,43 @@ async def cmd_users(message: Message):
 async def cmd_addtask(message: Message):
     if message.from_user.id != ADMIN_ID:
         return
-    await message.answer("برای اضافه کردن تسک از فرمت زیر استفاده کنید:\n\n/addtask تاریخ ساعت \"نام تسک\" یوزرنیم درصد \"منابع\"\n\nمثال:\n/addtask 2026-10-09 08:00 \"بتن‌ریزی سقف\" ali_rezaei 40 \"میلگرد ۵ تن + ۸ نفر کارگر\"")
 
+    try:
+        # جدا کردن متن دستور
+        text = message.text.replace("/addtask", "").strip()
+        
+        # پیدا کردن قسمت‌های داخل گیومه
+        import re
+        parts = re.findall(r'"([^"]*)"', text)
+        
+        if len(parts) < 2:
+            await message.answer("فرمت اشتباه است. حتماً نام تسک و منابع را داخل گیومه بگذارید.")
+            return
+
+        task_name = parts[0]
+        resources = parts[1]
+
+        # بقیه قسمت‌ها
+        remaining = text
+        for p in parts:
+            remaining = remaining.replace(f'"{p}"', "")
+        
+        remaining_parts = remaining.split()
+        
+        if len(remaining_parts) < 4:
+            await message.answer("فرمت ناقص است.\nمثال صحیح:\n/addtask 2026-10-10 08:00 \"بتن‌ریزی سقف\" shadloo2023 40 \"میلگرد ۵ تن\"")
+            return
+
+        date = remaining_parts[0]
+        time = remaining_parts[1]
+        username = remaining_parts[2]
+        planned_percent = int(remaining_parts[3])
+
+        await add_task(date, time, task_name, username, planned_percent, resources)
+        await message.answer(f"✅ تسک با موفقیت ثبت شد:\n\n📅 تاریخ: {date}\n⏰ ساعت: {time}\n📝 تسک: {task_name}\n👤 مسئول: @{username}\n📊 پلان: {planned_percent}%\n📦 منابع: {resources}")
+
+    except Exception as e:
+        await message.answer(f"خطا در ثبت تسک:\n{e}\n\nلطفاً فرمت را دقیق رعایت کنید.")
 @dp.message(Command("list"))
 async def cmd_list(message: Message):
     if message.from_user.id != ADMIN_ID:
